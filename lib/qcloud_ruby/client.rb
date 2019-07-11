@@ -14,38 +14,39 @@ module QcloudRuby
       self.instance_eval(&block)
     end
 
-    def default_params(region, action)
-      {
-        Region: region,
+    def default_params(action)
+      params = {
         Action: action,
         SecretId: secret_id,
         Timestamp: timestamp,
-        Nonce: nonce,
-        RequestClient: identity
+        Nonce: nonce
       }
+      params
     end
 
-    def gen_data(method, region, action, other_params)
-      params = default_params(region, action)
-                .merge!(other_params)
-                .sort
-                .to_h
-
+    def gen_data(method, action, other_params)
+      params = default_params(action).merge(other_params).sort.to_h
       query_str = URI.encode_www_form(params)
-
       params.merge!(Signature: sign(method, query_str))
     end
 
-    def request(method: 'POST', region: nil, action: nil, **other_params)
-      data = gen_data(method, region, action, other_params)
+    def request(method: 'POST', action: nil, secret_id: nil, secret_key: nil,  **other_params)
+      if secret_id || secret_key
+        QcloudRuby.configure do |config|
+          config.secret_id = secret_id
+          config.secret_key = secret_key
+        end
+      end
+
+      data = gen_data(method, action, other_params)
       uri = URI(url_with_protocol)
 
       resp = if method == 'GET'
-              uri.query = URI.encode_www_form(data)
-              Net::HTTP.get_response(uri)
-            else
-              Net::HTTP.post_form(uri, data)
-            end
+               uri.query = URI.encode_www_form(data)
+               Net::HTTP.get_response(uri)
+             else
+               Net::HTTP.post_form(uri, data)
+             end
 
       resp
     end
@@ -77,10 +78,9 @@ module QcloudRuby
     def sign(method, query)
       source = method + url + '?' + query
 
-      Base64.encode64(OpenSSL::HMAC.digest(
-        OpenSSL::Digest.new('sha1'),
-        secret_key, source))
-      .strip
+      Base64.encode64(OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha1'),
+                                           secret_key,
+                                           source)).strip
     end
 
     def_delegators :'QcloudRuby.configuration',
