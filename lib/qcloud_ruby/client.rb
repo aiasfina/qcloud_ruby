@@ -15,14 +15,14 @@ module QcloudRuby
     end
 
     def default_params(region, action)
-      {
-        Region: region,
+      params = {
         Action: action,
         SecretId: secret_id,
         Timestamp: timestamp,
-        Nonce: nonce,
-        RequestClient: identity
+        Nonce: nonce
       }
+      params[:Region] = region if region
+      params
     end
 
     def gen_data(method, region, action, other_params)
