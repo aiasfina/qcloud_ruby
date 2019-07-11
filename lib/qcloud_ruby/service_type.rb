@@ -5,5 +5,6 @@ module QcloudRuby
     DFW     = 'dfw'.freeze
     LB      = 'lb'.freeze
     ACCOUNT = 'account'.freeze
+    BILLING = 'billing'.freeze
   end
 end
