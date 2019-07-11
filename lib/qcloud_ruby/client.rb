@@ -41,11 +41,11 @@ module QcloudRuby
       uri = URI(url_with_protocol)
 
       resp = if method == 'GET'
-              uri.query = URI.encode_www_form(data)
-              Net::HTTP.get_response(uri)
-            else
-              Net::HTTP.post_form(uri, data)
-            end
+               uri.query = URI.encode_www_form(data)
+               Net::HTTP.get_response(uri)
+             else
+               Net::HTTP.post_form(uri, data)
+             end
 
       resp
     end
@@ -77,10 +77,9 @@ module QcloudRuby
     def sign(method, query)
       source = method + url + '?' + query
 
-      Base64.encode64(OpenSSL::HMAC.digest(
-        OpenSSL::Digest.new('sha1'),
-        secret_key, source))
-      .strip
+      Base64.encode64(OpenSSL::HMAC.digest(OpenSSL::Digest.new('sha1'),
+                                           secret_key,
+                                           source)).strip
     end
 
     def_delegators :'QcloudRuby.configuration',
