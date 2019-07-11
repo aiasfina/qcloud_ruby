@@ -6,8 +6,8 @@ module QcloudRuby
     attr_accessor :base_host, :ssl, :path, :secret_id, :secret_key
 
     def initialize
-      @base_host = 'api.qcloud.com'
-      @path      = '/v2/index.php'
+      @base_host = 'tencentcloudapi.com'
+      @path      = '/'
       @ssl       = true
     end
 
