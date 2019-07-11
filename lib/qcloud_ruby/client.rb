@@ -14,30 +14,31 @@ module QcloudRuby
       self.instance_eval(&block)
     end
 
-    def default_params(region, action)
+    def default_params(action)
       params = {
         Action: action,
         SecretId: secret_id,
         Timestamp: timestamp,
         Nonce: nonce
       }
-      params[:Region] = region if region
       params
     end
 
-    def gen_data(method, region, action, other_params)
-      params = default_params(region, action)
-                .merge!(other_params)
-                .sort
-                .to_h
-
+    def gen_data(method, action, other_params)
+      params = default_params(action).merge(other_params).sort.to_h
       query_str = URI.encode_www_form(params)
-
       params.merge!(Signature: sign(method, query_str))
     end
 
-    def request(method: 'POST', region: nil, action: nil, **other_params)
-      data = gen_data(method, region, action, other_params)
+    def request(method: 'POST', action: nil, secret_id: nil, secret_key: nil,  **other_params)
+      if secret_id || secret_key
+        QcloudRuby.configure do |config|
+          config.secret_id = secret_id
+          config.secret_key = secret_key
+        end
+      end
+
+      data = gen_data(method, action, other_params)
       uri = URI(url_with_protocol)
 
       resp = if method == 'GET'
